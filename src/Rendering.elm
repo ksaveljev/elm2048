@@ -1,16 +1,18 @@
 module Rendering where
 
 import GameModel (
-    Tile
-  , Number
-  , Empty
+    Tile(..)
   , Grid
   , gridSize
   , tilesWithCoordinates
   , GameState
-  , GameOver
-  , Won
-)
+  , Progress(..)
+  )
+
+import Text(
+    Style
+  , style
+  )
 
 tileSize : Float -- the width of a tile
 tileSize = 106.25
@@ -55,7 +57,7 @@ tileTextStyle tile = {
   , bold = True
   , italic = False
   , line = Nothing
-}
+  }
 
 displayTile : Tile -> Element
 displayTile tile =
@@ -74,8 +76,8 @@ displayTile tile =
 displayTileAtCoordinates : (Tile, Int, Int) -> Form
 displayTileAtCoordinates (t, i, j) =
   let position = (
-                   (tileSize + tileMargin) * (toFloat i - (toFlaot gridSize - 1) / 2)
-                 , (-1) * (tileSize + tileMargin) * (toFloat j - (toFloat gridSize -1) / 2)
+                   (tileSize + tileMargin) * (toFloat i - (toFloat gridSize - 1) / 2)
+                 , (-1) * (tileSize + tileMargin) * (toFloat j - (toFloat gridSize - 1) / 2)
                  )
   in move position <| toForm <| displayTile t
 
@@ -84,7 +86,7 @@ gridWidth = (toFloat gridSize) * tileSize + (1 + toFloat gridSize) * tileMargin
 
 displayGrid : Grid -> Element
 displayGrid g =
-  let gridBox = filled (rg 187 173 160) <| square gridWidth
+  let gridBox = filled (rgb 187 173 160) <| square gridWidth
       tiles = map displayTileAtCoordinates <| tilesWithCoordinates g
   in collage (round gridWidth) (round gridWidth) ([gridBox] ++ tiles)
 
@@ -132,5 +134,5 @@ display : GameState -> Element
 display gameState = (case gameState.gameProgress of
                        GameOver -> applyOverlay displayGameOverOverlay
                        Won -> applyOverlay displayWonOverlay
-                       otherwise -> id)
+                       otherwise -> identity)
                     <| displayGrid gameState.grid

@@ -17,10 +17,10 @@ type GameState = {
 gridSize : Int -- the length of the sides of the grid
 gridSize = 4
 
-readTile :: (Int, Int) -> Grid -> Tile
+readTile : (Int, Int) -> Grid -> Tile
 readTile (i, j) (Grid g) = (g ! j) ! i
 
-setTile :: (Int, Int) -> Grid -> Tile -> Grid
+setTile : (Int, Int) -> Grid -> Tile -> Grid
 setTile (i, j) (Grid g) t =
   let r = g ! j
       nr = (take i r) ++ [t] ++ (drop (i+1) r)
@@ -39,7 +39,7 @@ intToTile n = case n of
 tilesWithCoordinates : Grid -> [(Tile, Int, Int)]
 tilesWithCoordinates (Grid g) = concat
                              <| zipWith (\j r -> map (\(t, i) -> (t, i, j)) r) [0..(gridSize-1)]
-                             <| map (\r -> zip r [0..(gridSize-1)]
+                             <| map (\r -> zip r [0..(gridSize-1)])
                              <| g
 
 rotateGrid : Grid -> Grid -- rotate a grid clockwise by 90 degrees
@@ -53,4 +53,4 @@ defaultGame = {
     grid = emptyGrid
   , score = 0
   , gameProgress = InProgress
-}
+  }

@@ -2,33 +2,27 @@ module Logic where
 
 import InputModel (
     Input
-  , Direction
-  , Up
-  , Down
-  , Left
-  , Right
-  , None
-)
+  , Dir(..)
+  )
 
-import GameMode (
+import GameModel (
     GameState
-  , Tile
-  , Number
-  , Empty
+  , Tile(..)
+  , Progress(..)
   , defaultGame
   , emptyGrid
   , gridSize
-  , Grid
+  , Grid(..)
   , setTile
   , readTile
   , tileToInt
   , intToTile
   , tilesWithCoordinates
   , rotateGrid
-  , InProgress
-  , GameOver
-  , Won
-)
+  )
+
+import Utils ((!))
+import Maybe (maybe)
 
 -- takes a list of values and 'slides' them to the left,
 -- joining in lists pairs of adjacent identical values
@@ -47,22 +41,21 @@ slideRow : [Tile] -> ([Tile], Int)
 slideRow r =
   let grouped = groupedByTwo <| filter (\t -> t /= Empty) r
   in (
-       take gridSize
-       <| map (intToTile . sum . (map tileToInt)) grouped) ++ repeat gridSize Empty
-     , sum . (map tileToInt) <| concat <| filter (\x -> length x > 1) grouped
+       take gridSize <| (map (intToTile << sum << (map tileToInt)) grouped) ++ repeat gridSize Empty
+     , sum << (map tileToInt) <| concat <| filter (\x -> length x > 1) grouped
      )
 
 
-slideGrid : Direction -> Grid -> (Grid, Int)
+slideGrid : Dir -> Grid -> (Grid, Int)
 slideGrid dir grid =
   let rotatedGrid = (case dir of
                        Down -> rotateGrid
-                       Right -> rotateGrid . rotateGrid
-                       Up -> rotateGrid . rotateGrid . rotateGrid
-                       otherwise -> id)
+                       Right -> rotateGrid >> rotateGrid
+                       Up -> rotateGrid >> rotateGrid >> rotateGrid
+                       otherwise -> identity)
                     <| grid
 
-      rowsWithScores = map slideRow <| (\(Grid h) -> h) <| rotateGrid
+      rowsWithScores = map slideRow <| (\(Grid h) -> h) <| rotatedGrid
 
       slidRotatedGrid = Grid <| map fst rowsWithScores
 
@@ -70,9 +63,9 @@ slideGrid dir grid =
 
       slidGrid = (case dir of
                     Up -> rotateGrid
-                    Right -> rotateGrid . rotateGrid
-                    Down -> rotateGrid . rotateGrid . rotateGrid
-                    otherwise -> id)
+                    Right -> rotateGrid >> rotateGrid
+                    Down -> rotateGrid >> rotateGrid >> rotateGrid
+                    otherwise -> identity)
                  <| slidRotatedGrid
   in (slidGrid, scoreGained)
 
@@ -98,7 +91,7 @@ gameLost g =
       down = fst <| slideGrid Down g
       left = fst <| slideGrid Left g
       right = fst <| slideGrid Right g
-  in and [ g /= emptyGrid, up == down, down == left, left == right, right == g ]
+  in all identity [ g /= emptyGrid, up == down, down == left, left == right, right == g ]
 
 win : GameState -> GameState
 win gameState = { gameState | gameProgress <- Won }
@@ -130,7 +123,7 @@ placeRandomTile float1 float2 gameState =
   in if tileIndex == Nothing
         then gameState
         else { gameState |
-                grid <- setTile (maybe (0, 0) id <| tileIndex) gameState.grid <| newTile float2
+                grid <- setTile (maybe (0, 0) identity <| tileIndex) gameState.grid <| newTile float2
              }
 
 newGame : Input -> GameState
