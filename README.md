@@ -1,6 +1,6 @@
 # elm2048
 
-Working through the [tutorial](http://scrambledeggsontoast.github.io/2014/05/09/writing-2048-elm/) on creating a 2048 game using [Elm language](http://elm-lang.org).
+Working through the [tutorial](http://scrambledeggsontoast.github.io/2014/05/09/writing-2048-elm/) by Josh Kirklin on creating a 2048 game using [Elm language](http://elm-lang.org).
 
 It was a very nice read with good enough explanations to follow through every
 single line of the tutorial (although I was already familiar with Elm after
